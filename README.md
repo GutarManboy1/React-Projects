@@ -5,6 +5,14 @@ React News App
 
 The api didn't include images or descriptions. 😔 
 
+React EV vehicle rotate
+![Screenshot 2024-09-03 at 18 38 06](https://github.com/user-attachments/assets/7c2e19c2-1249-499d-9595-281463756ccc)
+
+![Screenshot 2024-09-03 at 18 37 07](https://github.com/user-attachments/assets/23a729a0-cccf-44d9-a976-49353d4ed8ad)
+
+![Screenshot 2024-09-03 at 18 37 27](https://github.com/user-attachments/assets/a0bef6a0-4b10-4244-8c50-9c88bb0757a0)
+video works too!
+
 React Sign Up/ Log In
 
 ![Screenshot 2024-08-29 at 22 21 26](https://github.com/user-attachments/assets/e8539114-4a25-41de-8034-2c2cd737831c)
