@@ -20,6 +20,10 @@ React Sign Up/ Log In
 ![Screenshot 2024-08-29 at 22 21 42](https://github.com/user-attachments/assets/815a7398-86f1-4cdf-be18-2ccc3b58e734)
 Forget Password disappears! 🤩 
 
+React Three Simple Project/ THE CUBE!
+<img width="1434" alt="Screenshot 2024-09-11 at 18 01 41" src="https://github.com/user-attachments/assets/126a1291-627e-42b4-b318-83d2d5b6e86d">
+This is just a practice trial. It will later use React.
+
 React Tic Tac Toe
 ![Screenshot 2024-08-30 at 23 14 57](https://github.com/user-attachments/assets/895cae32-b7cb-4355-8ca6-1c1ac4b67f01)
 
