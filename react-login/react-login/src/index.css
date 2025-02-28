@@ -1,0 +1,15 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+body{
+  background:linear-gradient(
+    to right,
+    #fefae0 0%,
+    #fefae0 50%,
+    #dda15e 50%,
+    #dda15e 100%
+  )}
+   
