@@ -1,0 +1,264 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+		// 認証をチェック
+    function isAnyAuthentificated() {
+      return request.auth != null;
+    }
+
+		// [リクエストのUID]と[authId]が一致するかチェック
+    function isUserAuthentificated(authId) {
+      return isAnyAuthentificated() && authId == request.auth.uid;
+    }
+
+    // [リクエストのUID]と[親ドキュメントのauth_id]が一致するかチェック
+    // TODO: 本来ならドキュメント内にauth_idを持たせるべきだが、現状は親ドキュメントのauth_idを参照している
+    function isUserMatchParentAuthId(userId) {
+      return isUserAuthentificated(get(/databases/$(database)/documents/users/$(userId)).data.auth_id);
+    }
+
+    // 管理者権限チェック関数
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // remote_config_settingsコレクション
+    match /remote_config_settings/{document} {
+      // 読み取り：管理者のみ
+      allow read: if isAdmin();
+
+      // 書き込み：管理者のみ
+     allow create, update, delete: if isAdmin();
+
+      // 履歴サブコレクション
+      match /history/{historyDoc} {
+        // 読み取り：管理者のみ
+        allow read: if isAdmin();
+        // 書き込み：システムによる自動作成のみ（親ドキュメント更新時）
+        allow write: if false;
+      }
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if isAnyAuthentificated();
+      allow update, delete: if isUserAuthentificated(resource.data.auth_id);
+
+      // community_auths サブコレクションのルール
+      match /community_auths/{authId} {
+        // ユーザー自身の認証状態の読み書き
+        allow read, write: if isUserMatchParentAuthId(userId);
+
+        // 他のユーザーの認証状態の読み取り（認証済みユーザーのみ）
+        allow read: if isAnyAuthentificated() &&
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)/community_auths/$(authId)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)/community_auths/$(authId)).data.isAuthenticated == true;
+      }
+
+      match /family/{familyUserId} {
+        allow read: if true; // 家族情報は他ユーザーでも閲覧可能
+        allow write, update, delete: if isUserMatchParentAuthId(userId);
+      }
+
+      match /point/{userId} {
+        allow read: if isUserMatchParentAuthId(userId);
+      }
+
+      match /mute_users/{muteUserId} {
+        allow read, write, update, delete: if isUserMatchParentAuthId(userId);
+      }
+
+      match /private/{privateId} {
+        allow read, write, update, delete: if isUserMatchParentAuthId(userId);
+      }
+
+      match /orders/{ordersId} {
+        allow read, write, update, delete: if isUserMatchParentAuthId(userId);
+      }
+
+      match /deposit/{depositId} {
+        allow read, write, update, delete: if isUserMatchParentAuthId(userId);
+      }
+
+      match /withdraw/{withdrawId} {
+        allow read, write, update, delete: if isUserMatchParentAuthId(userId);
+      }
+
+      match /reviews/{placeId} {
+        allow read, write, update, delete: if isUserMatchParentAuthId(userId);
+      }
+
+      match /user_stamp_history/{userStampHistoryId} {
+        allow read, write, update, delete: if isUserMatchParentAuthId(userId);
+      }
+
+      // followersとfollowingフィールドのルール
+      match /followers/{followerId} {
+        allow read: if true;
+        allow write, update, delete: if request.auth != null && (isUserMatchParentAuthId(userId) || isUserMatchParentAuthId(followerId)); // 自分のfollowersサブコレクションは自分とフォロワーだけが読み書き可能
+      }
+
+      match /following/{followingId} {
+        allow read: if true;
+        allow write, update, delete: if isUserMatchParentAuthId(userId); // 自分のfollowingサブコレクションは自分だけが読み書き可能
+      }
+
+      // コミュニティ設定のサブコレクション
+      match /community_config/{configId} {
+        // 読み取りルール - 認証前のユーザーも含めて全てのユーザーが読み取り可能
+        allow read: if true;
+
+        // 作成・更新・削除ルール
+        allow create, update, delete: if request.auth != null &&
+          // コミュニティの管理者のみ可能
+          userId == request.auth.uid;
+      }
+    }
+
+    match /spots/{spotId} {
+      allow read: if true;
+      allow write: if isAnyAuthentificated();
+      allow update, delete: if isUserMatchParentAuthId(request.resource.data.supplier.user_id);
+
+      match /spot_photos/{photoId} {
+        allow read: if true;
+        allow write: if isAnyAuthentificated();
+        allow update, delete: if isUserMatchParentAuthId(request.resource.data.supplier.user_id);
+      }
+    }
+
+    match /event_spots/{eventSpotId} {
+      allow read: if true;
+      allow write: if isAnyAuthentificated();
+      allow update, delete: if isUserMatchParentAuthId(request.resource.data.supplier.user_id);
+
+      match /event_spot_photos/{photoId} {
+        allow read: if true;
+        allow write: if isAnyAuthentificated();
+        allow update, delete: if isUserMatchParentAuthId(request.resource.data.supplier.user_id);
+      }
+    }
+
+    // spot_reviewsコレクションへのアクセス制御
+    match /spot_reviews/{placeId} {
+      // 認証されていないユーザーでも読み取り可能
+      allow read: if true;
+    }
+
+    // spot_reviewsコレクションへのアクセス制御
+    match /spot_review_timeline/{reviewId} {
+      // 認証されていないユーザーでも読み取り可能
+      allow read: if true;
+    }
+
+    match /passports/{placeId} {
+      // 認証されていないユーザーでも読み取り可能
+      allow read, update: if true;
+    }
+
+    match /spot_coupons/{placeId} {
+      // 認証されていないユーザーでも読み取り可能
+      allow read: if true;
+
+      // .used_countのフィールドのみ、誰でも更新可能
+      allow update: if request.resource.data.keys().hasOnly(['used_count']) || isAnyAuthentificated();
+    }
+
+    match /spot_sets/{spotSetId} {
+      allow read: if true;
+      allow write: if isAnyAuthentificated();
+      allow update, delete: if isUserMatchParentAuthId(request.resource.data.user_id);
+    }
+
+    match /campaigns/{campaignsId} {
+      allow read: if true;
+      allow write, delete, create: if request.auth.token.admin == true;
+    }
+
+    match /applied_campaign/{appliedCampaignId} {
+      allow write: if isAnyAuthentificated();
+      allow read, update, delete: if isUserMatchParentAuthId(resource.data.user_id);
+    }
+
+    match /checkins/{checkinId} {
+      allow read, create;
+      allow update: if request.resource.data.id == resource.data.id;
+      allow delete: if request.resource.data.user_id == resource.data.user_id;
+    }
+
+    match /favorite_spots/{favoriteId} {
+      allow read: if true;
+      allow delete: if isUserMatchParentAuthId(resource.data.user_id);
+      allow write, update: if isUserMatchParentAuthId(request.resource.data.user_id);
+    }
+
+    match /favorite_spot_sets/{favoriteId} {
+      allow read: if true;
+      allow delete: if isUserMatchParentAuthId(resource.data.user_id);
+      allow write: if isUserMatchParentAuthId(request.resource.data.user_id);
+    }
+
+    match /categories/{categoriesId} {
+			allow read: if true;
+			allow write: if isAdmin();
+    }
+
+    match /configs/{configId} {
+			allow read: if true;
+    }
+
+    match /notifications/{notificationId} {
+			allow read: if isUserMatchParentAuthId(resource.data.user_id);
+    }
+    match /spot_page_views/{spotPageViewId} {
+        allow read, write: if true;
+    }
+
+   match /spot_set_page_views/{spotSetPageViewId} {
+        allow read, write: if true;
+    }
+    match /reservation_logs/{reservationLogId} {
+        allow read, write: if true;
+    }
+    match /admin_notifications/{adminNotificationId} {
+        allow read: if true;
+    }
+
+    match /spot_stamps/{spotStampId} {
+			allow read: if true;
+      allow write, update: if isUserMatchParentAuthId(request.resource.data.user_id);
+      allow delete: if isUserMatchParentAuthId(resource.data.user_id);
+    }
+
+    match /spot_review_stamps/{reviewStampId} {
+			allow read: if true;
+      allow write, update: if isUserMatchParentAuthId(request.resource.data.user_id);
+      allow delete: if isUserMatchParentAuthId(resource.data.user_id);
+    }
+
+    // Report System Rules
+    // Reports collection
+    match /reports/{reportId} {
+      // Users can create reports (about spots, events, etc.)
+      allow create: if isAnyAuthentificated() && 
+                    request.resource.data.reporter_user_id == request.auth.uid;
+                    
+      // Admins can read and update reports
+      allow read, update: if isAdmin();
+      
+      // Reporters can read their own reports
+      allow read: if isAnyAuthentificated() && 
+                  resource.data.reporter_user_id == request.auth.uid;
+      
+      // Only admins can delete reports
+      allow delete: if isAdmin();
+    }
+    
+    // Admin users collection - only admins can access
+    match /admin_users/{adminId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

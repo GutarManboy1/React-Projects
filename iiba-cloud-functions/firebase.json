@@ -1,0 +1,130 @@
+{
+    "functions": [
+        {
+            "source": "functions",
+            "codebase": "default",
+            "ignore": [
+                "node_modules",
+                ".git",
+                "firebase-debug.log",
+                "firebase-debug.*.log"
+            ]
+        }
+    ],
+    "firestore": {
+        "rules": "firestore.rules",
+        "indexes": "firestore.indexes.json"
+    },
+    "hosting": [
+        {
+            "site": "admin-iiba-development",
+            "public": "build/web",
+            "ignore": [
+                "firebase.json",
+                "**/.*",
+                "**/node_modules/**"
+            ],
+            "rewrites": [
+                {
+                    "source": "**",
+                    "destination": "build/web/index.html"
+                }
+            ]
+        },
+        {
+            "site": "admin-iiba-staging",
+            "public": "build/web",
+            "ignore": [
+                "firebase.json",
+                "**/.*",
+                "**/node_modules/**"
+            ],
+            "rewrites": [
+                {
+                    "source": "**",
+                    "destination": "build/web/index.html"
+                }
+            ]
+        },
+        {
+            "site": "admin-iiba-production",
+            "public": "build/web",
+            "ignore": [
+                "firebase.json",
+                "**/.*",
+                "**/node_modules/**"
+            ],
+            "rewrites": [
+                {
+                    "source": "**",
+                    "destination": "build/web/index.html"
+                }
+            ]
+        }
+    ],
+    "emulators": {
+        "auth": {
+            "port": 9099
+        },
+        "functions": {
+            "port": 5001
+        },
+        "firestore": {
+            "port": 8080
+        },
+        "hosting": {
+            "port": 5000
+        },
+        "ui": {
+            "enabled": true,
+            "port": 4000
+        },
+        "singleProjectMode": true
+    },
+    "flutter": {
+        "platforms": {
+            "web": {
+                "buildConfigurations": {
+                    "dev": {
+                        "projectId": "admin-iiba-development-385505",
+                        "appId": "1:36795467243:web:b1b505a2b5b64be89505ae",
+                        "fileOutput": "lib/environment/firebase_options_dev.dart",
+                        "environment": "dev"
+                    },
+                    "stg": {
+                        "projectId": "admin-iiba-staging",
+                        "appId": "1:62611089199:web:aa2c9a57a51da1d4f4e3da",
+                        "fileOutput": "lib/environment/firebase_options_stg.dart",
+                        "environment": "stg"
+                    },
+                    "prod": {
+                        "projectId": "admin-iiba-production",
+                        "appId": "1:231009262984:web:8676ec0b1c47c8ba5aae3d",
+                        "fileOutput": "lib/environment/firebase_options_prod.dart",
+                        "environment": "prod"
+                    }
+                }
+            },
+            "dart": {
+                "lib/firebase_options_dev.dart": {
+                    "projectId": "iiba-development-385505",
+                    "configurations": {
+                        "web": "1:36795467243:web:1b91736347a0fe129505ae"
+                    }
+                },
+                "lib/firebase_options_stg.dart": {
+                    "projectId": "iiba-staging",
+                    "configurations": {
+                        "web": "1:62611089199:web:b1ee3c0fb1b80cd5f4e3da"
+                    }
+                },
+                "lib/firebase_options.dart": {
+                    "projectId": "iiba-production",
+                    "configurations": {
+                        "web": "1:231009262984:web:ef24f725e22529335aae3d"
+                    }
+                }
+            }
+        }
+    }
+}
